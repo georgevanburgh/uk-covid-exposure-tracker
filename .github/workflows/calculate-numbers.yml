@@ -1,0 +1,19 @@
+name: Calculate Numbers
+
+on:
+  schedule:
+    - cron: '0 */3 * * *'
+  push:
+    branches:
+      - master
+
+jobs:
+  calculate:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: Download latest exposure data
+        run: dotnet run
+      - uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_message: Pulled new exposure data

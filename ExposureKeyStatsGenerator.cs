@@ -9,19 +9,34 @@ internal class ExposureKeyStatsGenerator
 {
     private static readonly HttpClient client = new HttpClient();
     private const string ENDPOINT = @"https://distribution-te-prod.prod.svc-test-trace.nhs.uk/distribution/daily/{0}00.zip";
-    public static async Task<int> GetNumberOfExposuresForDate(DateTime date)
+    public static async Task<ExposureStat> GetNumberOfExposuresForDate(DateTime date)
     {
-        // TODO: Error handling
-        using (var stream = await client.GetStreamAsync(string.Format(ENDPOINT, date.ToString("yyyyMMdd"))))
+        var url = string.Format(ENDPOINT, date.ToString("yyyyMMdd"));
+
+        try
+        {
+            var count = await GetKeyCountForFile(url);
+            return new ExposureStat { Date = date, Count = count };
+        }
+        catch (HttpRequestException e)
+        {
+            Console.WriteLine($"Error whilst retrieving file for {date.ToShortDateString()}: {e}");
+            return new ExposureStat{ Date = date, Count = 0 };
+        }
+    }
+
+    private static async Task<int> GetKeyCountForFile(string url)
+    {
+        using (var stream = await client.GetStreamAsync(url))
         using (var unzipStream = new ZipArchive(stream))
         {
-            var export = unzipStream.GetEntry("export.bin");
-            using (var exportStream = export.Open())
-            using (var tempStream = new MemoryStream()) // TODO: Avoid copying
+            var exportFile = unzipStream.GetEntry("export.bin");
+            using (var exportStream = exportFile.Open())
+            using (var decodeStream = new MemoryStream()) // TODO: Avoid copying
             {
-                exportStream.CopyTo(tempStream);
-                tempStream.Seek(16, SeekOrigin.Begin); // Skip header
-                var exportData = Serializer.Deserialize<TemporaryExposureKeyExport>(tempStream);
+                exportStream.CopyTo(decodeStream);
+                decodeStream.Seek(16, SeekOrigin.Begin); // Skip header
+                var exportData = Serializer.Deserialize<TemporaryExposureKeyExport>(decodeStream);
                 return exportData.Keys.Count;
             }
         }

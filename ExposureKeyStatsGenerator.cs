@@ -34,7 +34,7 @@ internal class ExposureKeyStatsGenerator
             using (var exportStream = exportFile.Open())
             using (var decodeStream = new MemoryStream()) // TODO: Avoid copying
             {
-                exportStream.CopyTo(decodeStream);
+                await exportStream.CopyToAsync(decodeStream);
                 decodeStream.Seek(16, SeekOrigin.Begin); // Skip header
                 var exportData = Serializer.Deserialize<TemporaryExposureKeyExport>(decodeStream);
                 return exportData.Keys.Count;

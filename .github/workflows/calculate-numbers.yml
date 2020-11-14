@@ -12,8 +12,13 @@ jobs:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 5.0.x
       - name: Download latest exposure data
         run: dotnet run
       - uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: Pulled new exposure data
+          commit_author: GitHub Actions <actions@github.com>

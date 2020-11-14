@@ -7,69 +7,60 @@ using CsvHelper;
 using System.Globalization;
 using CsvHelper.Configuration;
 
-namespace nhs_proto_test
+// PARAMS
+const int DAYS_LOOKBACK = 14;
+string EXPOSURE_FILE = @"exposure-stats.csv";
+
+// Look back N days
+var dates = Enumerable.Range(0, DAYS_LOOKBACK).Select(x => DateTime.Today.AddDays(x * -1));
+
+// Fetch number of compromised keys for each day
+var tasks = dates.Select(x => ExposureKeyStatsGenerator.GetNumberOfExposuresForDate(x));
+var stats = (await Task.WhenAll(tasks)).ToList();
+
+// Dedupe with existing stats
+var existing = ReadExistingCsv(EXPOSURE_FILE);
+var toSave = existing != null ? MergeStats(existing, stats) : stats;
+
+foreach (var stat in toSave)
+    Console.WriteLine($"{stat.Date.ToShortDateString()}: {stat.Count}");
+
+WriteRecords(toSave.OrderByDescending(x => x.Date), EXPOSURE_FILE);
+
+static List<ExposureStat> MergeStats(IEnumerable<ExposureStat> first, IEnumerable<ExposureStat> second) => first
+        .Union(second)
+        .GroupBy(x => x.Date)
+        .Select(g => new ExposureStat { Date = g.Key, Count = g.Max(m => m.Count) })
+        .OrderByDescending(o => o.Date)
+        .ToList();
+
+static List<ExposureStat> ReadExistingCsv(string fileName)
 {
-    class Program
+    if (!File.Exists(fileName)) return null;
+
+    using (var reader = new StreamReader(fileName))
+    using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
     {
-        private const int DAYS_LOOKBACK = 14;
-        private const string EXPOSURE_FILE = "exposure-stats.csv";
+        csv.Configuration.RegisterClassMap<ExposureCsvMap>();
+        return csv.GetRecords<ExposureStat>().ToList();
+    }
+}
 
-        static async Task Main(string[] args)
-        {
-            // Look back N days
-            var dates = Enumerable.Range(0, DAYS_LOOKBACK).Select(x => DateTime.Today.AddDays(x * -1));
+static void WriteRecords(IEnumerable<ExposureStat> stats, string fileName)
+{
+    using (var writer = new StreamWriter(fileName))
+    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+    {
+        csv.Configuration.RegisterClassMap<ExposureCsvMap>();
+        csv.WriteRecords(stats);
+    }
+}
 
-            // Fetch number of compromised keys for each day
-            var tasks = dates.Select(x => ExposureKeyStatsGenerator.GetNumberOfExposuresForDate(x));
-            await Task.WhenAll(tasks);
-            var stats = tasks.Select(x => x.Result);
-
-            // Dedupe with existing stats
-            var existing = ReadExistingCsv();
-            var toSave = existing != null ? MergeStats(existing, stats) : stats;
-
-            foreach (var stat in toSave)
-                Console.WriteLine($"{stat.Date.ToShortDateString()}: {stat.Count}");
-
-            WriteRecords(toSave.OrderByDescending(x => x.Date));
-        }
-
-        private static List<ExposureStat> MergeStats(IEnumerable<ExposureStat> first, IEnumerable<ExposureStat> second) => first
-                .Union(second)
-                .GroupBy(x => x.Date)
-                .Select(g => new ExposureStat { Date = g.Key, Count = g.Max(m => m.Count) })
-                .OrderByDescending(o => o.Date)
-                .ToList();
-
-        private static List<ExposureStat> ReadExistingCsv()
-        {
-            if (!File.Exists(EXPOSURE_FILE)) return null;
-
-            using (var reader = new StreamReader(EXPOSURE_FILE))
-            using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-            {
-                csv.Configuration.RegisterClassMap<ExposureCsvMap>();
-                return csv.GetRecords<ExposureStat>().ToList();
-            }
-        }
-
-        private static void WriteRecords(IEnumerable<ExposureStat> stats)
-        {
-            using (var writer = new StreamWriter(EXPOSURE_FILE))
-            using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-            {
-                csv.Configuration.RegisterClassMap<ExposureCsvMap>();
-                csv.WriteRecords(stats);
-            }
-        }
-
-        private class ExposureCsvMap : ClassMap<ExposureStat>
-        {
-            public ExposureCsvMap()
-            {
-                Map(x => x.Date).TypeConverterOption.Format("yyyyMMdd");
-                Map(x => x.Count);
-            }
-        }
+class ExposureCsvMap : ClassMap<ExposureStat>
+{
+    public ExposureCsvMap()
+    {
+        Map(x => x.Date).TypeConverterOption.Format("yyyyMMdd");
+        Map(x => x.Count);
     }
 }

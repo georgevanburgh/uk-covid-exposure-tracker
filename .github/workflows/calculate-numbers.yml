@@ -6,6 +6,9 @@ on:
   push:
     branches:
       - master
+  pull_request:
+    branches:
+      - master
 
 jobs:
   calculate:
@@ -19,6 +22,7 @@ jobs:
       - name: Download latest exposure data
         run: dotnet run
       - uses: stefanzweifel/git-auto-commit-action@v4
+        if: github.ref == 'refs/heads/master'
         with:
           commit_message: Pulled new exposure data
           commit_author: GitHub Actions <actions@github.com>

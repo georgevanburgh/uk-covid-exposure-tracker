@@ -7,10 +7,13 @@
     <div id='graph'></div>
     <script>
     Plotly.d3.csv('exposure-stats.csv', (err, rows) => {
-        console.log(rows);
-
-        var plot = {
-            'name': 'Cases',
+    Plotly.d3.json('https://api.coronavirus.data.gov.uk/v1/data?filters=areaType=overview;date>2020-09-14&structure={"date": "date", "positiveTests": "newCasesByPublishDate", "admissions": "newAdmissions", "deaths": "newDeaths28DaysByDeathDate"}', (jrr, json) => {
+    
+        //console.log(rows);
+        //console.log(json);
+        
+        var plot1 = {
+            'name': 'App Compromised Keys',
             'type': 'line',
             // JavaScript dates -.-
             'x': rows.map(r => new Date(
@@ -19,7 +22,30 @@
                 r.Date.substring(6, 8))),
             'y': rows.map(r => r.Count),
         }
-        Plotly.newPlot('graph', [plot])
-    })
+
+        var plot2 = {
+            'name' : 'Tests',
+            'type' : 'line',
+            'x' : json.data.map(x => x.date),
+            'y' : json.data.map(y => y.positiveTests)
+        }
+
+        var plot3 = {
+            'name' : 'Deaths',
+            'type' : 'line',
+            'x' : json.data.map(x => x.date),
+            'y' : json.data.map(y => y.deaths)
+        }
+
+        var plot4 = {
+            'name' : 'Hospital Admissions',
+            'type' : 'line',
+            'x' : json.data.map(x => x.date),
+            'y' : json.data.map(y => y.admissions)
+        }
+
+
+        Plotly.newPlot('graph', [plot1, plot2, plot3, plot4])
+    })})
     </script>
 </body>

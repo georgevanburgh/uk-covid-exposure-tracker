@@ -6,46 +6,49 @@
 <body>
     <div id='graph'></div>
     <script>
-    Plotly.d3.csv('exposure-stats.csv', (err, rows) => {
-    Plotly.d3.json('https://api.coronavirus.data.gov.uk/v1/data?filters=areaType=overview;date>2020-09-14&structure={"date": "date", "positiveTests": "newCasesByPublishDate", "admissions": "newAdmissions", "deaths": "newDeaths28DaysByDeathDate"}', (jrr, json) => {
-    
-        //console.log(rows);
-        //console.log(json);
-        
-        var plot1 = {
-            'name': 'App Compromised Keys',
-            'type': 'line',
-            // JavaScript dates -.-
-            'x': rows.map(r => new Date(
-                r.Date.substring(0, 4),
-                r.Date.substring(4, 6) - 1,
-                r.Date.substring(6, 8))),
-            'y': rows.map(r => r.Count),
-        }
+    Plotly.d3.csv('exposure-stats.csv', (csvrr, rows) => {
+    Plotly.d3.json('https://api.coronavirus.data.gov.uk/v1/data?filters=areaType=overview;date>2020-09-14&structure={"date": "date", "positiveTests": "newCasesByPublishDate", "hospitalAdmissions": "newAdmissions", "deaths": "newDeaths28DaysByDeathDate", "ventilators": "covidOccupiedMVBeds"}', (jerr, json) => {
 
-        var plot2 = {
-            'name' : 'Tests',
-            'type' : 'line',
-            'x' : json.data.map(x => x.date),
-            'y' : json.data.map(y => y.positiveTests)
-        }
+        if (csvrr) console.log(csvrr);
+        if (jerr) console.log(jerr);
 
-        var plot3 = {
-            'name' : 'Deaths',
-            'type' : 'line',
-            'x' : json.data.map(x => x.date),
-            'y' : json.data.map(y => y.deaths)
-        }
+        var plots = [
+            {
+                'name': 'App Distributed Keys',
+                'type': 'line',
+                'x': rows.map(r => new Date(
+                    r.Date.substring(0, 4),
+                    r.Date.substring(4, 6) - 1,
+                    r.Date.substring(6, 8))),
+                'y': rows.map(r => r.Count),
+            },
+            {
+                'name': 'Positive Tests',
+                'type': 'line',
+                'x': json.data.map(x => x.date),
+                'y': json.data.map(y => y.positiveTests)
+            },
+            {
+                'name': 'Daily Deaths',
+                'type': 'line',
+                'x': json.data.map(x => x.date),
+                'y': json.data.map(y => y.deaths)
+            },
+            {
+                'name': 'Hospital Admissions',
+                'type': 'line',
+                'x': json.data.map(x => x.date),
+                'y': json.data.map(y => y.hospitalAdmissions)
+            },
+            {
+                'name': 'Ventilators Occupied',
+                'type': 'line',
+                'x': json.data.map(x => x.date),
+                'y': json.data.map(y => y.ventilators)
+            }
+        ];
 
-        var plot4 = {
-            'name' : 'Hospital Admissions',
-            'type' : 'line',
-            'x' : json.data.map(x => x.date),
-            'y' : json.data.map(y => y.admissions)
-        }
-
-
-        Plotly.newPlot('graph', [plot1, plot2, plot3, plot4])
+        Plotly.newPlot('graph', plots)
     })})
     </script>
 </body>

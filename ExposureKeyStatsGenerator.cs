@@ -7,7 +7,12 @@ using ProtoBuf;
 
 internal class ExposureKeyStatsGenerator
 {
-    private static readonly HttpClient client = new HttpClient();
+    private static readonly HttpClient client = new HttpClient
+    {
+        // Cloudfront supports HTTP2
+        DefaultRequestVersion = new Version(2, 0)
+    };
+
     private const string ENDPOINT = @"https://distribution-te-prod.prod.svc-test-trace.nhs.uk/distribution/daily/{0}00.zip";
     public static async Task<ExposureStat> GetNumberOfExposuresForDate(DateTime date)
     {
@@ -27,12 +32,13 @@ internal class ExposureKeyStatsGenerator
 
     private static async Task<int> GetKeyCountForFile(string url)
     {
-        using (var stream = await client.GetStreamAsync(url))
+        using (var response = await client.GetAsync(url))
+        using (var stream = await response.Content.ReadAsStreamAsync())
         using (var unzipStream = new ZipArchive(stream))
         {
             var exportFile = unzipStream.GetEntry("export.bin");
             using (var exportStream = exportFile.Open())
-            using (var decodeStream = new MemoryStream()) // TODO: Avoid copying
+            using (var decodeStream = new MemoryStream())
             {
                 await exportStream.CopyToAsync(decodeStream);
                 decodeStream.Seek(16, SeekOrigin.Begin); // Skip header

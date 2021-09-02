@@ -41,7 +41,7 @@ static List<ExposureStat> ReadExistingCsv(string fileName)
     using (var reader = new StreamReader(fileName))
     using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
     {
-        csv.Configuration.RegisterClassMap<ExposureCsvMap>();
+        csv.Context.RegisterClassMap<ExposureCsvMap>();
         return csv.GetRecords<ExposureStat>().ToList();
     }
 }
@@ -51,7 +51,7 @@ static void WriteRecords(IEnumerable<ExposureStat> stats, string fileName)
     using (var writer = new StreamWriter(fileName))
     using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
     {
-        csv.Configuration.RegisterClassMap<ExposureCsvMap>();
+        csv.Context.RegisterClassMap<ExposureCsvMap>();
         csv.WriteRecords(stats);
     }
 }

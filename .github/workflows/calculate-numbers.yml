@@ -19,7 +19,6 @@ jobs:
         uses: actions/setup-dotnet@v1
         with:
           dotnet-version: 6.0.x
-          include-prerelease: true
       - name: Download latest exposure data
         run: dotnet run
       - uses: stefanzweifel/git-auto-commit-action@v4

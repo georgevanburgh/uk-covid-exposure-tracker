@@ -12,7 +12,7 @@ const int DAYS_LOOKBACK = 14;
 string EXPOSURE_FILE = @"exposure-stats.csv";
 
 // Look back N days
-var dates = Enumerable.Range(0, DAYS_LOOKBACK).Select(x => DateTime.Today.AddDays(x * -1));
+var dates = Enumerable.Range(0, DAYS_LOOKBACK).Select(x => DateOnly.FromDateTime(DateTime.Today.AddDays(x * -1)));
 
 // Fetch number of compromised keys for each day
 var tasks = dates.Select(x => ExposureKeyStatsGenerator.GetNumberOfExposuresForDate(x));

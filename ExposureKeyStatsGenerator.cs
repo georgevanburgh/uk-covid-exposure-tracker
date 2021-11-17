@@ -14,7 +14,7 @@ internal class ExposureKeyStatsGenerator
     };
 
     private const string ENDPOINT = @"https://distribution-te-prod.prod.svc-test-trace.nhs.uk/distribution/daily/{0}00.zip";
-    public static async Task<ExposureStat> GetNumberOfExposuresForDate(DateTime date)
+    public static async Task<ExposureStat> GetNumberOfExposuresForDate(DateOnly date)
     {
         var url = string.Format(ENDPOINT, date.ToString("yyyyMMdd"));
 

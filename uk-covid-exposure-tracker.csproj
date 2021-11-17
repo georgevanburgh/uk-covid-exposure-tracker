@@ -6,8 +6,16 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <AdditionalFiles Include="proto/TemporaryExposureKeyExport.proto" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="CsvHelper" Version="27.2.0" />
     <PackageReference Include="protobuf-net" Version="3.0.101" />
+    <PackageReference Include="protobuf-net.BuildTools" Version="3.0.115">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
 </Project>

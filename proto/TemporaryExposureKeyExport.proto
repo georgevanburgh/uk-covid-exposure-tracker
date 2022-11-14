@@ -62,4 +62,18 @@ message TemporaryExposureKey {
   // Number of days elapsed between symptom onset and the TEK being used.
   // E.g. 2 means TEK is 2 days after onset of symptoms.
   optional sint32 days_since_onset_of_symptoms = 6;
+
+  // Tag 7 is reserved for future use.
+
+  // Data type representing a variant of concern.
+  enum VariantOfConcern {
+    VARIANT_TYPE_UNKNOWN = 0;
+    VARIANT_TYPE_1 = 1;  // Vaccine is effective
+    VARIANT_TYPE_2 = 2;  // Highly transmissive
+    VARIANT_TYPE_3 = 3;  // High severity
+    VARIANT_TYPE_4 = 4;  // Vaccine breakthrough
+  }
+
+  // Type of variant of concern associated with a key.
+  optional VariantOfConcern variant_of_concern = 8 [default = VARIANT_TYPE_UNKNOWN];
 }

@@ -2,6 +2,6 @@ using System;
 
 internal record ExposureStat
 {
-    public DateOnly Date { get; set; }
-    public int Count { get; set; }
+    public required DateOnly Date { get; init; }
+    public required int Count { get; init; }
 }

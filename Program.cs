@@ -15,7 +15,7 @@ string EXPOSURE_FILE = @"exposure-stats.csv";
 var dates = Enumerable.Range(0, DAYS_LOOKBACK).Select(x => DateOnly.FromDateTime(DateTime.Today.AddDays(x * -1)));
 
 // Fetch number of compromised keys for each day
-var tasks = dates.Select(x => ExposureKeyStatsGenerator.GetNumberOfExposuresForDate(x));
+var tasks = dates.Select(ExposureKeyStatsGenerator.GetNumberOfExposuresForDate);
 var stats = (await Task.WhenAll(tasks)).ToList();
 
 // Dedupe with existing stats
@@ -38,22 +38,20 @@ static List<ExposureStat> ReadExistingCsv(string fileName)
 {
     if (!File.Exists(fileName)) return null;
 
-    using (var reader = new StreamReader(fileName))
-    using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-    {
-        csv.Context.RegisterClassMap<ExposureCsvMap>();
-        return csv.GetRecords<ExposureStat>().ToList();
-    }
+    using var reader = new StreamReader(fileName);
+    using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+
+    csv.Context.RegisterClassMap<ExposureCsvMap>();
+    return csv.GetRecords<ExposureStat>().ToList();
 }
 
 static void WriteRecords(IEnumerable<ExposureStat> stats, string fileName)
 {
-    using (var writer = new StreamWriter(fileName))
-    using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
-    {
-        csv.Context.RegisterClassMap<ExposureCsvMap>();
-        csv.WriteRecords(stats);
-    }
+    using var writer = new StreamWriter(fileName);
+    using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+
+    csv.Context.RegisterClassMap<ExposureCsvMap>();
+    csv.WriteRecords(stats);
 }
 
 class ExposureCsvMap : ClassMap<ExposureStat>

@@ -18,7 +18,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v1
         with:
-          dotnet-version: 7.0.x
+          dotnet-version: 8.0.x
       - name: Download latest exposure data
         run: dotnet run
       - uses: stefanzweifel/git-auto-commit-action@v4

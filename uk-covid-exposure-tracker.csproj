@@ -11,7 +11,7 @@
 
   <ItemGroup>
     <PackageReference Include="CsvHelper" Version="30.0.1" />
-    <PackageReference Include="protobuf-net" Version="3.2.26" />
+    <PackageReference Include="protobuf-net" Version="3.2.30" />
     <PackageReference Include="protobuf-net.BuildTools" Version="3.2.27">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
